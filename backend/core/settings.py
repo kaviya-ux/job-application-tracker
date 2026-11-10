@@ -126,7 +126,7 @@ elif DB_ENGINE == 'sqlite':
     }
 else:
     raise ImproperlyConfigured(
-        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql' or 'sqlite' in backend/.env."
+        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql' or 'sqlite'"
     )
 
 # Password validation
