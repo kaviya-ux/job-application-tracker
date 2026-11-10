@@ -108,11 +108,11 @@ elif DB_ENGINE == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'postgres'),
-            'USER': os.getenv('DB_USER', 'postgres.bcsvdwvtnyanghbrlypt'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-            'PORT': os.getenv('DB_PORT', '5432'),
+            'NAME': 'postgres',
+            'USER': 'postgres.bcsvdwvtnyanghbrlypt',
+            'PASSWORD': 'kaviyas@10112006',
+            'HOST': 'aws-0-ap-northeast-1.pooler.supabase.com',
+            'PORT': '5432',
             'OPTIONS': {'sslmode': 'require'},
         }
     }
