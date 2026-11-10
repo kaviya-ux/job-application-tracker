@@ -109,7 +109,7 @@ elif DB_ENGINE == 'postgres':
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.getenv('DB_NAME', 'postgres'),
-            'USER': os.getenv('DB_USER', 'postgres'),
+            'USER': os.getenv('DB_USER', 'postgres.bcsvdwvtnyanghbrlypt'),
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', '127.0.0.1'),
             'PORT': os.getenv('DB_PORT', '5432'),
@@ -126,7 +126,7 @@ elif DB_ENGINE == 'sqlite':
     }
 else:
     raise ImproperlyConfigured(
-        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql' or 'sqlite'"
+        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql', 'sqlite', or 'postgres'"
     )
 
 # Password validation
