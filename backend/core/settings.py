@@ -191,3 +191,24 @@ if any(w in cors_raw for w in ['*', 'all']) or os.getenv('CORS_ALLOW_ALL_ORIGINS
 else:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_raw.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
+
+import os
+
+ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+if "corsheaders.middleware.CorsMiddleware" in MIDDLEWARE:
+    MIDDLEWARE.remove("corsheaders.middleware.CorsMiddleware")
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres.bcsvdwvtnyanghbrlypt",
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": "aws-0-ap-northeast-1.pooler.supabase.com",
+        "PORT": "5432",
+    }
+}
