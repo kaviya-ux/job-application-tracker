@@ -1,1 +1,1 @@
-web: gunicorn --chdir backend core.wsgi:application
+web: python backend/manage.py migrate && gunicorn --chdir backend core.wsgi:application
