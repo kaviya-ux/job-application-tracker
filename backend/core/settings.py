@@ -1,38 +1,16 @@
-"""
-Django settings for Job Application Tracker (core).
-Configured for DRF, SimpleJWT, MySQL (via PyMySQL), CORS, and environment variables.
-"""
-
 from pathlib import Path
 import os
 from datetime import timedelta
-from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Load environment variables from backend/.env
 load_dotenv(BASE_DIR / '.env')
 
-# Security: SECRET_KEY must be provided via environment variables (no hardcoded fallback)
-SECRET_KEY = os.getenv('SECRET_KEY')
-if not SECRET_KEY:
-    raise ImproperlyConfigured(
-        "The SECRET_KEY environment variable is missing! "
-        "Please check backend/.env and ensure SECRET_KEY is set."
-    )
-
-# Debug mode: True in local development, False in production
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-job-tracker-production-key-987654321')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-# Allowed Hosts
-allowed_hosts_raw = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost')
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_raw.split(',') if host.strip()]
-if DEBUG and 'testserver' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('testserver')
+ALLOWED_HOSTS = ["*"]
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,22 +18,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Third-party packages
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
-
-    # Local application apps
     'authentication.apps.AuthenticationConfig',
     'applications.apps.ApplicationsConfig',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Placed at top so CORS headers are added to all responses
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for production static file serving
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -85,80 +59,50 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
 
-# Database configuration: explicit engine switch ('mysql' or 'sqlite')
-DB_ENGINE = os.getenv('DB_ENGINE', 'mysql').lower()
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.bcsvdwvtnyanghbrlypt',
+        'PASSWORD': os.getenv('DB_PASSWORD', 'kaviyas@10112006'),
+        'HOST': os.getenv('DB_HOST', 'aws-0-ap-northeast-1.pooler.supabase.com'),
+        'PORT': '5432',
+        'OPTIONS': {'sslmode': 'require'},
+    }
+}
 
-if DB_ENGINE == 'mysql':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME', 'job_tracker_db'),
-            'USER': os.getenv('DB_USER', 'job_tracker_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-            'PORT': os.getenv('DB_PORT', '3306'),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
-        }
-    }
-
-elif DB_ENGINE == 'postgres':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'postgres',
-            'USER': 'postgres.bcsvdwvtnyanghbrlypt',
-            'PASSWORD': 'kaviyas@10112006',
-            'HOST': 'aws-0-ap-northeast-1.pooler.supabase.com',
-            'PORT': '5432',
-            'OPTIONS': {'sslmode': 'require'},
-        }
-    }
-       
-elif DB_ENGINE == 'sqlite':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    raise ImproperlyConfigured(
-        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql', 'sqlite', or 'postgres'"
+try:
+    import psycopg2
+    conn = psycopg2.connect(
+        dbname='postgres',
+        user='postgres.bcsvdwvtnyanghbrlypt',
+        password=DATABASES['default']['PASSWORD'],
+        host=DATABASES['default']['HOST'],
+        port='5432',
+        sslmode='require',
+        connect_timeout=5,
     )
+    conn.close()
+except Exception as e:
+    if 'Tenant or user not found' in str(e):
+        DATABASES['default']['HOST'] = 'aws-1-ap-northeast-1.pooler.supabase.com'
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -175,7 +119,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-# SimpleJWT configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -184,31 +127,10 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS Configuration
-cors_raw = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173')
-if any(w in cors_raw for w in ['*', 'all']) or os.getenv('CORS_ALLOW_ALL_ORIGINS', '').lower() in ('true', '1'):
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_raw.split(',') if origin.strip()]
-CORS_ALLOW_CREDENTIALS = True
-
-import os
-
-ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
-if "corsheaders.middleware.CorsMiddleware" in MIDDLEWARE:
-    MIDDLEWARE.remove("corsheaders.middleware.CorsMiddleware")
-MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres.bcsvdwvtnyanghbrlypt",
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": "aws-0-ap-northeast-1.pooler.supabase.com",
-        "PORT": "5432",
-    }
-}
+CSRF_TRUSTED_ORIGINS = [
+    'https://job-application-tracker-two-weld.vercel.app',
+    'https://*.vercel.app',
+    'https://*.onrender.com',
+]
