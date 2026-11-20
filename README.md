@@ -2,7 +2,7 @@
 
 [![Django](https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Django REST Framework](https://img.shields.io/badge/DRF-3.15-red?style=for-the-badge)](https://www.django-rest-framework.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -70,7 +70,7 @@ A modern, production-ready, full stack **Job Application Tracker** built to help
 - **Framework:** Python 3.12 & Django 5.1
 - **REST API:** Django REST Framework (DRF)
 - **Authentication:** `djangorestframework-simplejwt` (JSON Web Tokens)
-- **Database Engine:** MySQL 8.0 (connected via `PyMySQL` driver with `cryptography`)
+- **Database Engine:** SQLite locally; PostgreSQL via `DATABASE_URL` in production
 - **CORS Handling:** `django-cors-headers`
 - **Filtering:** `django-filter`
 - **Production Server:** Gunicorn + WhiteNoise (static file serving)
@@ -89,7 +89,7 @@ A modern, production-ready, full stack **Job Application Tracker** built to help
                               ├── Scoped Querysets (WHERE user_id = request.user.id)
                               │
                               ▼
-                      [ MySQL 8.0 Database ]
+                    [ PostgreSQL Database ]
                       (applications_application, auth_user)
 ```
 
@@ -124,7 +124,7 @@ All endpoints are prefixed with `/api/`:
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| `GET` | `/health/` | Public | System & MySQL connection health check |
+| `GET` | `/health/` | Public | System and database connection health check |
 | `POST` | `/auth/register/` | Public | Register new user (validates email uniqueness) |
 | `POST` | `/auth/login/` | Public | Login and obtain access & refresh JWT tokens |
 | `POST` | `/auth/refresh/` | Public | Exchange refresh token for fresh access token |
@@ -145,7 +145,6 @@ All endpoints are prefixed with `/api/`:
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- MySQL 8.0+
 
 ### 1. Backend Setup
 1. Clone repository:
@@ -174,14 +173,9 @@ All endpoints are prefixed with `/api/`:
    SECRET_KEY=your-secure-random-secret-key
    DEBUG=True
    ALLOWED_HOSTS=127.0.0.1,localhost
-   DB_ENGINE=mysql
-   DB_NAME=job_tracker_db
-   DB_USER=job_tracker_user
-   DB_PASSWORD=your_password
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
    CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
    ```
+   SQLite is used by default for local development. Set `DATABASE_URL` when connecting to PostgreSQL.
 
 5. Apply database migrations:
    ```bash
@@ -236,10 +230,10 @@ All endpoints are prefixed with `/api/`:
    - `VITE_API_BASE_URL`: `https://your-backend.onrender.com/api`
 5. Click **Deploy**. Vercel uses `vercel.json` to handle client-side routing.
 
-### Option 2: Backend on Render + Free MySQL on Aiven
-1. **Free Cloud MySQL:**
-   - Create a free account on [Aiven.io](https://aiven.io).
-   - Create a free MySQL service and copy the Service URI (`mysql://user:pass@host:port/defaultdb`).
+### Option 2: Backend on Render + PostgreSQL
+1. **Create a PostgreSQL database:**
+   - Create a PostgreSQL database on [Supabase](https://supabase.com) or use a Render PostgreSQL database.
+   - Copy its connection URL.
 2. **Deploy Backend on Render:**
    - Create a new **Web Service** on [Render](https://render.com) connected to your GitHub repo.
    - Set **Root Directory** to repository root.
@@ -248,8 +242,7 @@ All endpoints are prefixed with `/api/`:
    - Environment Variables:
      - `SECRET_KEY`: Generate a 50+ character random string.
      - `DEBUG`: `False`
-     - `DB_ENGINE`: `mysql`
-     - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: (from Aiven)
+     - `DATABASE_URL`: PostgreSQL connection URL from Supabase or Render.
      - `ALLOWED_HOSTS`: `your-service.onrender.com`
      - `CORS_ALLOWED_ORIGINS`: `https://your-frontend.vercel.app`
 

@@ -6,7 +6,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.db import connection
-from django.conf import settings
 
 
 def health_check(request):
@@ -25,7 +24,7 @@ def health_check(request):
         "status": "ok",
         "api": "Job Application Tracker API",
         "version": "1.0.0",
-        "database_engine": settings.DB_ENGINE,
+        "database_engine": connection.vendor,
         "database_status": db_status,
     })
 

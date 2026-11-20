@@ -1,12 +1,13 @@
 """
 Django settings for Job Application Tracker (core).
-Configured for DRF, SimpleJWT, MySQL (via PyMySQL), CORS, and environment variables.
+Configured for DRF, SimpleJWT, PostgreSQL, CORS, and environment variables.
 """
 
 from pathlib import Path
 import os
 from datetime import timedelta
 from django.core.exceptions import ImproperlyConfigured
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -85,35 +86,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
 
-# Database configuration: explicit engine switch ('mysql' or 'sqlite')
-DB_ENGINE = os.getenv('DB_ENGINE', 'mysql').lower()
-
-if DB_ENGINE == 'mysql':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME', 'job_tracker_db'),
-            'USER': os.getenv('DB_USER', 'job_tracker_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-            'PORT': os.getenv('DB_PORT', '3306'),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
-        }
-    }
-elif DB_ENGINE == 'sqlite':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    raise ImproperlyConfigured(
-        f"Unsupported DB_ENGINE '{DB_ENGINE}'. Please set DB_ENGINE to 'mysql' or 'sqlite' in backend/.env."
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=bool(os.environ.get('DATABASE_URL')),
     )
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -140,6 +119,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
